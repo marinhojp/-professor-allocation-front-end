@@ -4,62 +4,108 @@ import { Button, Form } from "react-bootstrap";
 
 import Page from "../../components/Page";
 import ListView from "../../components/ListView";
+import Modal from "../../components/Modal";
+
 import api from "../../services/axios";
 
 const endpoint = "/courses";
 
 const columns = [
-    {value: "ID", id: "id"},
-    {value: "Name", id: "name"},
-    
+  { value: "ID", id: "id" },
+  { value: "Name", id: "name" },
 ];
 
-const INITIAL_STATE = {id: 0, name:""};
+const INITIAL_STATE = { id: 0, name: "" };
 
 const Courses = () => {
-    const [visible, setVisible] = useState(false);
-    const [course, setCourse] = useState(INITIAL_STATE);
+  const [visible, setVisible] = useState(false);
+  const [course, setCourse] = useState(INITIAL_STATE);
 
-    const actions = [
-        {
-            name: "Edit",
-            action: (_course) => {
-                setCourse(_course);
-                setVisible(true);
-            },
+  const handleSave = async (refetch) => {
+    try {
+      if (course.id) {
+        await api.put(`${endpoint}/${course.id}`, { name: course.name });
 
-            name: "Remove",
-            action: async (item, refetch) => {
-                if(window.confirm("Você tem certeza de que deseja deletar este curso?")){
-                    try{
-                        await api.delete(`${endpoint}/${course.id}`);
-                        await refetch();
-                        toast.info(`Curso ${course.name} foi removido!`);
-                    } catch(error){
-                        toast.info(error.message);
-                    }
-                }
-            },
-        },
+        toast.success("Atualizado com sucesso!");
+      } else {
+        await api.post(endpoint, { name: course.name });
 
+        toast.success("O curso foi cadastrado com sucesso!");
+      }
 
-    ]
+      setVisible(false);
 
+      await refetch();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
+  const handleClose = () => setVisible(false);
 
-    return (<Page title="Courses">
-        <Button className="nb-2" onClick={()=>{
-            setCourse(INITIAL_STATE);
+  const actions = [
+    {
+        name: "Edit",
+        action: (_course) => {
+            setCourse(_course);
             setVisible(true);
-        }}>
-            Create Course
-        </Button>
+        },
+    },
+    {
+        name: "Remove",
+        action: async (item, refetch) => {
+            if(window.confirm("Você certeza de que quer deletar este curso?")){
+                try{
+                    await api.delete(`${endpoint}/${item.id}`);
+                    await refetch();
+                    toast.info(`Curso ${item.name} foi removido!`);
+                }catch(error){
+                    toast.info(error.message);
+                }
+            }
+        },
+    },
+];
 
-        <ListView actions={actions} columns={columns} endpoint={endpoint}>
+  return (
+    <Page title="Courses">
+      <Button
+        className="mb-2"
+        onClick={() => {
+          setCourse(INITIAL_STATE);
+          setVisible(true);
+        }}
+      >
+        Create Course
+      </Button>
 
-
-        </ListView>
-    </Page>);
+      <ListView actions={actions} columns={columns} endpoint={endpoint}>
+        {({ refetch }) => {
+          return (
+            <Modal
+              title={`${course.id ? "Update" : "Create"} Course`}
+              show={visible}
+              handleSave={() => handleSave(refetch)}
+              handleClose={() => handleClose(refetch)}
+            >
+              <Form>
+                <Form.Group>
+                  <Form.Label>Course Name</Form.Label>
+                  <Form.Control
+                    name="course"
+                    onChange={(event) =>
+                      setCourse({ ...course, name: event.target.value })
+                    }
+                    value={course.name}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal>
+          );
+        }}
+      </ListView>
+    </Page>
+  );
 };
 
 export default Courses;
