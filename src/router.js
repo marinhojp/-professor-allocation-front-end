@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Layout from "./components/Layout/";
 import Courses from "./pages/Courses";
 // import Allocation from "./pages/Allocation";
-// import Professor from "./pages/Professor";
+import Professor from "./pages/Professor";
 import Department from "./pages/Department";
 
 const routes = [
@@ -19,11 +19,11 @@ const routes = [
     name: "Courses",
     component: Courses,
   },
-  // {
-  //     path: "/professor",
-  //     name: "Professor",
-  //     component: Professor,
-  // },
+  {
+    path: "/professors",
+    name: "Professor",
+    component: Professor,
+  },
   {
     path: "/departments",
     name: "Department",
