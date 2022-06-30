@@ -49,7 +49,7 @@ const Department = () => {
     {
       name: "Edit",
       action: (_department) => {
-        setCourse(_department);
+        setDepartment(_department);
         setVisible(true);
       },
     },
@@ -57,7 +57,9 @@ const Department = () => {
       name: "Remove",
       action: async (item, refetch) => {
         if (
-          window.confirm("Você certeza de que quer deletar este departamento?")
+          window.confirm(
+            "Você tem certeza de que quer deletar este departamento?"
+          )
         ) {
           try {
             await api.delete(`${endpoint}/${item.id}`);
@@ -76,7 +78,7 @@ const Department = () => {
       <Button
         className="mb-2"
         onClick={() => {
-          setCourse(INITIAL_STATE);
+          setDepartment(INITIAL_STATE);
           setVisible(true);
         }}
       >
@@ -90,7 +92,7 @@ const Department = () => {
               title={`${department.id ? "Update" : "Create"} Department`}
               show={visible}
               handleSave={() => handleSave(refetch)}
-              handleClose={() => handleClose(refetch)}
+              handleClose={() => setVisible(false)}
             >
               <Form>
                 <Form.Group>
