@@ -8,158 +8,158 @@ import Modal from "../../components/Modal";
 
 import api from "../../services/axios";
 
-
 const endpoint = "/professors";
 
 const columns = [
-    { value: "ID", id: "id" },
-    { value: "Name", id: "name" },
-    { value: "CPF", id: "cpf"},
-    { 
-      value: "Department", 
-      id: "departmentId", 
-     // render: (department) => department.name,
+  { value: "ID", id: "id" },
+  { value: "Name", id: "name" },
+  { value: "CPF", id: "cpf" },
+  {
+    value: "Department",
+    id: "department",
+    render: (department) => department.name,
   },
 ];
 
-const INITIAL_STATE = { id: 0, name: "", cpf: "", departmentId: 0};
+const INITIAL_STATE = { id: 0, name: "", cpf: "", departmentId: 0 };
 
 const Professor = () => {
-    const [professor, setProfessor] = useState(INITIAL_STATE);
-    const [visible, setVisible] = useState(false);
-    const [departments, setDepartments] = useState([]);
+  const [professor, setProfessor] = useState(INITIAL_STATE);
+  const [visible, setVisible] = useState(false);
+  const [departments, setDepartments] = useState([]);
 
-    useEffect(() => {
-      api.get("/departments").then((response) => {
+  useEffect(() => {
+    api
+      .get("/departments")
+      .then((response) => {
         setDepartments(response.data);
       })
       .catch((error) => {
         toast.error(error.message);
       });
-    }, []);
+  }, []);
 
-    const actions = [
-        {
-        name: "Edit",
-        action: ({id, name, cpf, department:{id: departmentId }}) => {
-           setProfessor({id, name, cpf, department:{id: departmentId }});
-           setVisible(true);
-          },
-        },
-        {name: "Remove",
-        action: async (professor, refetch) => {
-            if (
-              window.confirm(
-                "Você tem certeza de que quer deletar este registro?"
-              )
-            ) {
-              try {
-                await api.delete(`${endpoint}/${professor.id}`);
-                await refetch();
-                toast.info(`Professor(a) ${professor.name} foi removido(a)!`);
-              } catch (error) {
-                toast.info(error.message);
-              }
-            }
-          },
+  const actions = [
+    {
+      name: "Edit",
+      action: ({ id, name, cpf, department: { id: departmentId } }) => {
+        setProfessor({ id, name, cpf, departmentId });
+        setVisible(true);
+      },
     },
-    ];
-
-    const handleSave = async (refetch) => {
-        const data = {
-          name: professor.name,
-          cpf: professor.cpf,
-          departmentId: professor.departmentId,
-        };
-        try {
-          if (professor.id) {
-            await api.put(`${endpoint}/${professor.id}`, data);
-    
-            toast.success("Atualizado com sucesso!");
-          } else {
-            await api.post(endpoint, data);
-    
-            toast.success("O Professor foi cadastrado com sucesso!");
+    {
+      name: "Remove",
+      action: async (professor, refetch) => {
+        if (
+          window.confirm("Você tem certeza de que quer deletar este registro?")
+        ) {
+          try {
+            await api.delete(`${endpoint}/${professor.id}`);
+            await refetch();
+            toast.info(`Professor(a) ${professor.name} foi removido(a)!`);
+          } catch (error) {
+            toast.info(error.message);
           }
-    
-          setVisible(false);
-    
-          await refetch();
-        } catch (error) {
-          toast.error(error.message);
         }
-      };
+      },
+    },
+  ];
 
-      const onChange = ({target: {name, value}}) => {
-        setProfessor({
-            ...professor,
-            [name]: value,
-        })
+  const handleSave = async (refetch) => {
+    const data = {
+      name: professor.name,
+      cpf: professor.cpf,
+      departmentId: professor.departmentId,
+    };
+    try {
+      if (professor.id) {
+        await api.put(`${endpoint}/${professor.id}`, data);
+
+        toast.success("Atualizado com sucesso!");
+      } else {
+        await api.post(endpoint, data);
+
+        toast.success("O Professor foi cadastrado com sucesso!");
       }
 
+      setVisible(false);
 
-      return (
-        <Page title="Professors">
-          <Button
-            className="mb-2"
-            onClick={() => {
-              setProfessor(INITIAL_STATE);
-              setVisible(true);
-            }}
-          >
-            Create Professor
-          </Button>
-    
-          <ListView actions={actions} columns={columns} endpoint={endpoint}>
-            {({ refetch }) => {
-              return (
-                <Modal
-                  title={`${professor.id ? "Update" : "Create"} Professor`}
-                  show={visible}
-                  handleSave={() => handleSave(refetch)}
-                  handleClose={() => setVisible(false)}
-                >
-                  <Form>
-                    <Form.Group>
-                      <Form.Label>Professor Name</Form.Label>
-                      <Form.Control
-                        name="name"
-                        onChange={onChange}
-                        value={professor.name}
-                      />
-                    </Form.Group>
-                    <Form.Group>
-                      <Form.Label>Professor CPF</Form.Label>
-                      <Form.Control
-                        name="CPF"
-                        onChange={onChange}
-                        value={professor.cpf}
-                      />
-                    </Form.Group>
-                    <Form.Group>
-                      <Form.Label>Department</Form.Label>
-                      <select
-                      className ="form-control"
-                        name="departmentId"
-                        onChange={onChange}
-                        value={professor.departmentId}
-                      >
-                        <option>Selecione um departamento</option>
-                        {departments.map((department, index)=>{
-                            return (<option key={index} value={department.id}>
-                                {department.name}
-                            </option>
-                            );
-                        })}
-                      </select>
-                    </Form.Group>
-                  </Form>
-                </Modal>
-              );
-            }}
-          </ListView>
-        </Page>
-      );
+      await refetch();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const onChange = ({ target: { name, value } }) => {
+    setProfessor({
+      ...professor,
+      [name]: value,
+    });
+  };
+
+  return (
+    <Page title="Professors">
+      <Button
+        className="mb-2"
+        onClick={() => {
+          setProfessor(INITIAL_STATE);
+          setVisible(true);
+        }}
+      >
+        Create Professor
+      </Button>
+
+      <ListView actions={actions} columns={columns} endpoint={endpoint}>
+        {({ refetch }) => {
+          return (
+            <Modal
+              title={`${professor.id ? "Update" : "Create"} Professor`}
+              show={visible}
+              handleSave={() => handleSave(refetch)}
+              handleClose={() => setVisible(false)}
+            >
+              <Form>
+                <Form.Group>
+                  <Form.Label>Professor Name</Form.Label>
+                  <Form.Control
+                    name="name"
+                    onChange={onChange}
+                    value={professor.name}
+                  />
+                </Form.Group>
+                <Form.Group className = "mt-4">
+                  <Form.Label>Professor CPF</Form.Label>
+                  <Form.Control
+                    name="cpf"
+                    onChange={onChange}
+                    value={professor.cpf}
+                  />
+                </Form.Group>
+                <Form.Group className ="mt-4">
+                  <Form.Label>Department</Form.Label>
+                  <select
+                    className="form-control"
+                    name="departmentId"
+                    onChange={onChange}
+                    value={professor.departmentId}
+                  >
+                    <option>Selecione um departamento</option>
+                    {departments.map((department, index) => {
+                      return (
+                        <option key={index} value={department.id}>
+                          {department.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </Form.Group>
+              </Form>
+            </Modal>
+          );
+        }}
+      </ListView>
+    </Page>
+  );
 };
 
 export default Professor;
